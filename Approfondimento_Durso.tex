@@ -1,0 +1,629 @@
+\documentclass[11pt]{article}
+%\documentclass[draft]{article}
+
+%\usepackage[italian]{babel}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=29mm,
+ right=29mm,
+ top=35mm,
+ bottom=35mm
+ }
+
+\usepackage{graphicx} % Immagini fantastiche e...
+\graphicspath{        % dove trovarle
+  {./images/},
+  {../images/}        % Necessario se cartella chapters
+}
+
+\usepackage[T1]{fontenc} 
+\usepackage{babel}
+\DeclareUnicodeCharacter{2014}{\dash}
+\DeclareUnicodeCharacter{2028}{}
+
+\usepackage{bbm}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{subfig}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage[notlot,notlof]{tocbibind}
+\usepackage[super]{natbib}
+\usepackage{url}
+\usepackage{verbatim}
+\usepackage{caption}
+\usepackage{longtable}
+\usepackage{hyperref} % lasciare per ultimo
+\hypersetup{colorlinks=true, linkcolor=black, citecolor=black, plainpages=false, urlcolor=blue}
+
+% Usato nella copertina
+\usepackage{wallpaper}
+
+% Simboli matematici
+\usepackage{amsfonts}
+\usepackage{mathabx} 
+
+ 
+% ================================ %
+%          Cose Personali          %
+% ================================ %
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+% DSD Syntax Symbols
+% DA USARE DENTRO MATH ENVIRONMENT
+\newcommand{\toe}{^\wedge}
+\newcommand{\cmpl}{^*}
+\newcommand{\toec}{^{\wedge *}}
+
+% Alcune comodita' logico/matematiche
+\let\implies\rightarrow
+\let\Implies\Rightarrow
+\let\impliedby\leftarrow
+\let\Impliedby\Leftarrow
+\let\iff\Leftrightarrow
+
+\let\et\wedge
+\let\vel\vee
+
+\newcommand\N{\ensuremath{\mathbb{N}}}
+\newcommand\R{\ensuremath{\mathbb{R}}}
+\newcommand\Z{\ensuremath{\mathbb{Z}}}
+\renewcommand\O{\ensuremath{\emptyset}}
+\newcommand\Q{\ensuremath{\mathbb{Q}}}
+\newcommand\C{\ensuremath{\mathbb{C}}}
+
+% ================================================================================================================================ %
+%            Il Documento          %
+% ================================================================================================================================ %
+\begin{document}
+
+% ================================ %
+%        Creo Prima Pagina         %
+% ================================ %
+
+\ThisCenterWallPaper{0.95}{polloPallido}
+% Intestazione
+% TODO Migliorare esteticamente
+\begin{titlepage}
+ 	\centering
+  \Huge{\textbf{Deepening on \\ Foundations of Neural Networks}}\\ 
+  [25mm]
+  \Huge{\textbf{From weighted average to Attention: \\ The Transformer}}\\
+  %\Huge{\textbf{a survey}}\\  %trovare titolo accattivante
+ 	[90mm]
+  \raggedright
+   \Large{\textbf{}}\\
+  \Large{\textbf{Student:}}\\
+  \Large{\textbf{Mattia D'Urso}}\\
+ 	[35mm]
+  \raggedright
+  %\Large{\textbf{Relator:}}\\
+  %\Large{\textbf{Prof. Alberto Policriti}}\\
+ 	%[50mm]
+ 	\centering
+   \LARGE{\underline{\textbf{ACADEMIC YEAR 2020-2021}}}\\
+\end{titlepage}
+
+% ================================ %
+%      Indice              %
+% ================================ %
+\tableofcontents
+\thispagestyle{empty}
+\cleardoublepage
+
+
+% ================================ %
+%      Chapter 1       %
+% ================================ %
+\section{Deep Learning before attention}   %da rivedere
+In this section are described the architectures used before the introduction of Transformer. The idea was to think ad hoc model for each class of task, such as image or language processing and temporal analysis, in order to achieve the best performance possible. The first type of architecture was the Multi Layer Perceptron, as natural evolution of the single Perceptron. Then was introduced in 1998 the first Convolutional Neural Network \cite{lenet} for a more efficient image analysis and then has been derived all its variants. An other important class of architectures is the Recurrent Neural Networks, introduced by Rumelhart\cite{rume} and Hopfield \cite{hopfield}, whose are able to infer considering the temporal order of the input. 
+
+\subsection{Multi Layer Perceptron}
+A multilayer perceptron (MLP) is a class of feedforward artificial neural network that consists of at least three layers of nodes: an input layer, a hidden layer and an output layer. Except for the input nodes, each node is a neuron that uses a nonlinear activation function. MLP utilizes an algorithm called back propagation for supervised training. Its multiple layers and non-linear activation distinguish MLP from a linear perceptron. 
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.6]{mlp}}
+\caption{Multi Layer Perceptron architecture} 
+\label{fig}
+\end{figure}
+
+\noindent The formula that each neuron computes is:
+\begin{displaymath}
+Y =\sigma(W^TX+b)
+\end{displaymath}
+\noindent where $Y$ is the prediction, $W$ is the weights matrix, $X$ is the input vector, $b$ is the bias term and $\sigma$ is the activation function. In order to train automatically this models the back propagation algorithm is used. More advanced applications can include dropout layers, batch normalization layers and skip connections.
+
+
+\subsection{Convolutional Neural Networks}
+Convolutional Neural Networks are based on the shared-weight architecture of the convolution kernels, or filters, that slide along input features and provide reductions known as feature maps. They are usually applied to visual imagery but can be applied also to NLP and time series analysis. CNNs are regularized versions of multi layer perceptron. Multilayer perceptrons usually mean fully connected networks, that is, each neuron in one layer is connected to all neurons in the next layer. CNNs take a different approach, leveraging the hierarchical model in the data and assembling models of increasing complexity using smaller, simpler models through filters. CNNs use relatively little pre-processing compared to other image classification algorithms. This means that the network learns to optimize the filters (or kernels) through automated learning, whereas in traditional algorithms these filters are hand-engineered. More advanced CNNs use some special layers such as MAX/min Pooling or Dropout layers. Some of the task that this model are able to solve are image classification, object detection and financial time series prediction (using Gramian Angual Fields \cite{gaf}).
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.3]{cnn}}
+\caption{Convolutional Neural Network architecture} 
+\label{fig}
+\end{figure}
+
+\subsection{Recurrent Neural Networks}
+A recurrent neural network is a class of artificial neural networks where connections between nodes form a directed graph along a temporal sequence. This allows it to highlitght temporal dynamic behavior. Derived from feedforward neural networks, RNNs can use their internal state (memory) to process variable length sequences of inputs. This makes them applicable to tasks such as next word prediction, multi modal translation or speech recognition.  
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.55]{rnn}}
+\caption{Recurrent Neural Network architecture} 
+\label{fig}
+\end{figure}
+
+\noindent RNNs can have different forms such as one-to-one, one-to-many or many-to-many based on the number of inputs and outputs. In order to train RNNs you must unfold them (as you can see in Figure 3) and use an algorithm called ``Back propagation through time'' which needs to defining the number of application of it in advance. This constraint limits the theoretical expressive power of RNNs. More advanced architectures are Long-Short Time Memory (LSTM) and Gated Recurrent Unit (GRU). 
+
+\newpage
+% ================================ %
+%           Chapter 2           %
+% - Un po di psicologia sull'attenzione
+% - Capire cme cazzo funziona MLP che impara i pesi
+% ================================ %
+\section{The Attention mechanism} 
+\begin{center}
+\emph{``A neural network is considered to be an effort to mimic human brain actions in a simplified manner. Attention Mechanism is also an attempt to implement the same action of selectively concentrating on a few relevant things, while ignoring others in deep neural networks.''}
+\end{center}
+
+In psychology, attention is defined as the cognitive process of selectively concentrating on one or a few things while ignoring others. Bahdanau was inspired by this intuition when published his work on the first attention Model (AM) in 2015. He introduced the first Attention Model for Machine Translation \cite{Bahdanau} and since that time attention has become enormously popular within the Artificial Intelligence (AI) community as an essential component of neural architectures for a remarkably large number of applications in Natural Language Processing, Speech and Computer Vision. The main idea behind attention is to pay attention only on the relevant parts of the input. For instance, in translation and summarization tasks, only certain words in the input sequence may be relevant for predicting the next word. Likewise, in an image captioning problem, some regions of the input image may be more relevant for generating the next word in the caption. An other important application is attention for interpretability. So, before talk about Transformer, let's see their origins.
+
+\subsection{Attention Basics}
+A primitive a idea of attention is the average where each part of the input have the same importance. Then given a data set of $n$ instances, features and their corresponding target values $\{(x_1, y_1), (x_2, y_2), ..., (x_n, y_n)\}$ the prediction is:
+\begin{displaymath}
+\hat{y} = \frac{1}{n} \sum_{i=1}^n y_i
+\end{displaymath}
+In 1964 Naradaya-Watson proposed a better approach in which the estimator uses a weighted average where weights correspond to the relevance of the training:  
+\begin{displaymath}
+\hat{y} = \sum_{i=1}^n \alpha (x, x_i) y_i
+\end{displaymath}
+where $\alpha (x, x_i)$ encodes the relevance of the instance $x_i$ to predict for $x$.  The authors showed that the estimator has:
+\begin{itemize}
+\item \textbf{Consistency}: given enough training data it converges to optimal results.
+\item \textbf{Simplicity}: no free parameters, the information is in the data and not in the weights. 
+\end{itemize}
+Fast forward 50 years, attention mechanism in deep models can be viewed as a generalization that also allows learning the weighting function. 
+
+
+
+\subsubsection{The first Attention Model}
+The first use of AM\cite{Bahdanau}  was proposed for a sequence-to-sequence modeling task. A sequence-to-sequence model consists of an Encoder-Decoder architecture, in this case were used RNNs for both. The first model takes as input a sequence of tokens $\{x_1, x_2, ..., x_T \}$, where $T$ is the length of input sequence, and encode it in a fixed length sequence $\{h_1, h_2, ..., h_{T'} \}$ that the Decoder uses to reconstruct the output $\{y_1, y_2, ..., y_{T''} \}$. This kind of model brings two main challenges. First, the encoder has to compress all the input information into a single fixed length vector $h_{T'}$ that is passed to the decoder. Using a single fixed length vector to compress long and detailed input sequences may lead to loss of information\cite{cho}. Second, it is uncapable to model alignment between input and output sequences, which is an essential aspect of structured output tasks such as translation or summarization\cite{young}. 
+
+Intuitively each output token is expected to be more influenced by some specific parts of the input sequence. However, decoder lacks any mechanism to selectively focus on relevant input tokens while generating each output token. AM aims at mitigating these challenges by allowing the decoder to access the entire encoded input sequence using set of vectors $\{h_1, h_2, ..., h_{T'} \}$. The central idea is to induce attention weights $\alpha$ over the input sequence to prioritize the set of positions where relevant information is present for generating the next output token. 
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.3]{encdec}}
+\caption{Encoder-Decoder architecture: (a) traditional (b) with attention model}
+\label{fig}
+\end{figure}
+
+The attention block in the architecture is responsible for automatically learning the attention weights $\alpha_{i,j}$, which capture the relevance between $h_i$ (the encoder hidden state, which we refer to as candidate state) and $s_{j-1}$ (the decoder hidden state, which we refer to as query state). These attention weights are then used for building a context matrix $c$, which is the weighted concatenation of all the hidden states of the encoder, from which we can extract the single context vector $c_{i,j}$ at each decoder step. This additional context matrix is the mechanism by which decoder can access the entire input sequence and also focus on the relevant positions in the input sequence. This not only leads to improvements in performance on the final task but also improves the quality of the output due to better alignment.  
+
+Going deeper, the attention weights $\alpha$ are learned by incorporating an additional MLP network within the architecture. This feed forward network learns a particular attention weight $\alpha_{i,j}$ as a function of two states, $h_i$ (candidate state) and $s_{j-1}$ (query state) which are taken as input by the neural network. This function is called the alignment function $a$ as it scores how relevant is the candidate state $h_i$ for the query state $s_{j-1}$. This alignment function outputs energy scores $e_{i,j}$ which are then fed into the distribution function $p$ which converts the energy scores into attention weights. This distribution function most generally is the Softmax function. When the functions $a$ and $p$ are differentiable, the whole attention based encoder-decoder model becomes one large differentiable function and can be trained jointly with encoder-decoder components of the architecture using simple back propagation. \\
+
+The attention model above can also be seen as a mapping of sequence of keys $K$ to an attention distribution $\alpha$ according to query $q$ where keys are encoder hidden states $h_i$ and query is the single decoder hidden state $s_{j-1}$. Here the attention distribution $\alpha_{i,j}$ emphasizes the keys which are relevant for the main task with respect to the query $q$. Then $e = a(K,q)$ and $\alpha = p(e)$. In some cases, there is also additional input of values $V$ on which the attention distribution is applied. The keys and values generally have one to one mapping and although the core attention model proposed by Bahdanau\cite{Bahdanau} does not distinguish between keys and values $(k_i = v_i = h_i )$. Hence a generalized attention model $A$ works with a set of key-value pairs $(K, V )$ and query $q$ such that:
+\begin{displaymath}
+A(q,K,V) = \sum_i p(a(k_i, q)) \ast v_i
+\end{displaymath}
+where, as said before, $q$ is the single decoder hidden state  $s_{j-1}$, $k_i$ is the encoder hidden state $h_i$, $a(k_i, q)$ is the the energy score, $p(a(k_i, q))$ are the weights and $v_i$ the values (recall \newline $k_i = v_i$) and $A$ is the attention function. The weights are computed starting from the data and then applied to the data. \\ 
+
+\noindent From a mathematician perspective the equations are the following:
+\begin{center} 
+\begin{tabular}{ l l l l l l |}
+Function & Encoder- Decoder & Encoder - Decoder with attention \\
+\hline 
+Encode    & $h_i = f(x_i, h_{i-1})$ 		& $h_i = f(x_i, h_{i-1})$ \\
+Context    & $c=h_T$                    		& $ c_j = \sum_{i=1}^T \alpha_{i,j} h_i$ \\
+                & 						 & $ \alpha_{i,j} = p(e_{i,j})$ \\
+                &						 & $e_{i,j} = a(s_{j-1}, h_i)$ \\ %da capire che cosa fa
+Decode    & $s_j = f (s_{j-1}, y_{j-1}, c)$ 	 & $s_j = f(s_{j-1}, y_{j-1}, c_j)$ \\
+Generate & $ y_j = g(y_{j-1}, s_j, c)$		& $ y_j = g(y_{j-1}, s_j, c_j)$	
+\end{tabular}
+\end{center} 
+
+\subsubsection{Attention for Interpretability}
+Since AI model are considered as black boxes the interest of  interpretability of this models is growing driven by both performance as well as transparency and fairness. Modeling attention is particularly interesting from the perspective of interpretability because it allows us to directly inspect the internal working of the deep learning architectures. The hypothesis is that the magnitude of attention weights is an indicator of how relevant a specific region of input is for the prediction of output at each position in a sequence. This can be easily accomplished by visualizing the attention weights for a set of input and output pairs. In this case attention takes two sentences, turns them into a matrix where the words of one sentence form the columns, and the words of another sentence form the rows, and then it makes matches, identifying relevant context.
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.65]{att}}
+\caption{Alignment of French and English sentences}
+\label{fig}
+\end{figure}
+
+\noindent An example of visualizing attention in NLP is shown in Figure 5 \cite{Bahdanau} in which attention weights clearly show automatic alignment of sentences in French and English despite the fact that subject-verb-noun locations differ from language to language.  Note that the model isn’t just mindless aligning the first word at the output with the first word from the input. It actually learned from the training phase how to align words in that language pair (French and English in our example). An other example, but in Computer Vision, is the work of Xu et al. \cite{xu} (Figure 6) in which is provided an extensive list of visualizations of the relevant image regions (i.e. with high attention weights) whose had a significant impact on the generated text in the image captioning task.
+
+An example for how precise this mechanism can be comes from the attention papers listed above:
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.45]{att_img}}
+\caption{Relevant image regions for image captioning}
+\label{fig}
+\end{figure}
+
+
+\subsection{Different types of attention}
+In this section we talk about the taxonomy of the attention mechanisms. We can distinguish different categories of attention.  
+
+\subsubsection{Number of Sequences}
+We can classify attention basing on the number of input they can compute. We define a \emph{distinctive} model if candidate and query states belong to two distinct input and output sequences respectively. This type of attention is used in task such as Machine Translation, Image Captioning and Speech-Recognition. We define a \emph{co-attention} model if operates on multiple input sequences at the same time and jointly learns their attention weights, to capture interactions between these inputs. This type of attention is used in task such as Visual Question Answering and Sentiment Classification. The third type is the \emph{self}-attention in which input is a sequence but the output is not a sequence. In this scenario, attention can be used for learning relevant tokens in the input sequence for every token in the same input sequence. This type of attention is used in task such as Document Classification and Text Representation, is also used in Transformer architecture.
+
+\subsubsection{Number of Abstraction Levels}
+In the most general case, attention weights are computed only for the original input sequence. This type of attention can be termed as \emph{single-level}. On the other hand, attention may be applied on multiple levels of abstraction of the input sequence in a sequential manner. The output (context vector) of the lower abstraction level becomes the query state for the higher abstraction level. Additionally, models that use \emph{multi-level} attention can be further classified based on whether the weights are learned top-down or bottom-up.
+
+\subsubsection{Number of Positions}
+The differences arise from positions of the input sequence where attention function is calculated. The attention introduced by Bahdanau\cite{Bahdanau} is also known as \emph{soft} attention. It uses a weighted average of all hidden states of the input sequence to build the context vector. This model is efficiently trainable through back propagation, but also results in quadratic computational cost. In the \emph{hard} attention model the context vector is computed from stochastically sampled hidden states in the input sequence. The hard attention model is beneficial due to decreased computational cost, but making a hard decision at every position of the input renders the resulting framework non-differentiable and difficult to optimize. Luong\cite{luo} proposed two attention models, namely \emph{local} (called also ``restricted'') and \emph{global}, in context of machine translation task. The global attention model is similar to the soft attention model, it is slightly simpler to compute. The local attention model, on the other hand, is an intermediate between soft and hard attention. The key idea is to first detect an attention point or position within the input sequence and pick a window around that position to create a local soft attention model. This last solution is computational efficient and differentiable within the window.
+
+\begin{comment}
+\subsection{Some applications of the attention models}
+In this subsection is reported a table\cite{attsurvey} in which there are some example of attention models applied to some tasks.
+\begin{center}
+\begin{longtable}{  p{3cm} p{3.8cm}  p{7.5cm} }
+\hline \hline
+Application Domain & Application & Seminal Works \\
+\hline \hline
+Natural Language Processing   & Machine Translation 		& [Bahdanau et al. 2015], [Luong et al. 2015], [Vaswani et al. 2017], \\
+						& Question Answering 		& [Hermann et al. 2015], [Sukhbaatar et al. 2015] \\
+						& Summarization 			& [Rush et al. 2015], [Nallapati et al. 2016], [Chopra et al. 2016] \\
+						& Test Classification 			& [Yang et al. 2016] \\	
+						& Text Represtantation Learning & [Devlin et al. 2019], [Radford et al. 2018], \\
+						& Sentiment Analysis 		& [Wang et al. 2016], [Ma et al. 2018], [Tang et al. 2016] \\	 \\	
+\hline \\
+Computer Vision			& Image classification 		& [Mnih et al. 2014], [Jetley et al. 2018]\\
+						& Image generation			& [Gregor et al. 2015], [Parmar et al. 2018]\\
+						& Object detection 			& [Ba et al. 2014]\\
+						& Image Synthesis 			& [Zhang et al. 2019]\\ \\	
+\hline \\
+Graph-based System		& Graph Classification		& [Lee et al. 2018], [Ma et al. 2017] \\
+						& Graph to Sequence Generation  & [Beck et al. 2018]\\
+						& Node Classification		& [Velickovic et al. 2018], [Abu-El-Haija et al. 2018], [Feng et al. 2016] \\
+						& Link Prediction			& [Zhao et al. 2017]	 \\		
+\hline
+\end{longtable}
+\end{center}
+\end{comment}
+\newpage
+% ================================ %
+%           Chapter 3           %
+% ================================ %
+\section{Network Architectures with Attention}
+In this section are described some architectures that use attention to boost their performance.
+
+\subsection{Encoder - Decoder}
+Basically the Encoder-Decoder architecture is composed by a feature extractor which encodes the main informations from the input and map them into a fixed length context vector $c$ which is decoded by an other model that maps those information in a different space. Some popular encoders are CNNs while some popular decoders are RNNs or LSTM. This type of architecture is particularly useful for many multi-modal tasks such as Image and Video Captioning, Language Translation and Speech Recognition due is able to extract the information of the input and translate it. The application of attention in this architecture is described above.
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.35]{endec2}}
+\caption{High level representation of Encoder-Decoder}
+\label{fig}
+\end{figure}
+
+
+\subsection{End-to-End Memory Networks}
+There are some applications like Question Answering and chat bots that require the ability to learn from information in a database of facts (sentences). These networks are fed with a set of informations, usually sentences, and a query ($q$). End-to-End Memory Networks \cite{Sukhbaatar} achieve that task by using an array of memory blocks to store the sentences, and using attention to model relevance of each fact in the memory for answering the given query. End-to-End Memory Networks can be considered as a generalization of AM, wherein instead of modeling attention over a single sequence they model it over a large database of sequences. Hence, we can think of memory networks as having three components: 
+\begin{itemize}
+\item A process that “reads” raw sentences and the question, and converts them into distributed representations called ``memory''.
+\item The application of the weights computed with respect to the question to the memory to generate the output.
+\item The final process that compute the answer and returns the predicted answer.
+\end{itemize}
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.6]{mem}}
+\caption{End-to-End Memory Networks}
+\label{fig}
+\end{figure}
+
+\subsection{Transformer} 
+The classical approach to Machine Translation was with RNNs, whose rely on sequential processing of input at the encoding step that results in computational inefficiency as the processing is sequential and not parallelized. To address this, the authors of ``Attention is all you need''\cite{att} proposed Transformer architecture that completely eliminates sequential processing and recurrent connections. It relies only on self-attention mechanism to capture global dependencies between input and output. Authors demonstrated that Transformer architecture achieved significant parallel processing, shorter training time and higher accuracy without any recurrent component. 
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.65]{trans}}
+\caption{Transformer architecture from ``attention is all you need''}
+\label{fig}
+\end{figure}
+
+The Transformer architecture is basically an Encoder-Decoder architecture with some additions. The first step is the preprocessing in which the positional encoding is add to the input and then the matrixes $Q \textrm{ (queries)}, \; K \textrm{ (keys)}, \; V \textrm{ (values)}$ are generated from the input. These matrixes are the concatenation of the result of the product of the embeddings and three pre-trained matrixes. Notice that these new matrixes are smaller in dimension than the embedding matrixes. Their dimensionality is 64, while the embedding and encoder input/output matrixes have dimensionality of 512. Then the input pass throw the encoder which is is composed of a stack of $N = 6$ identical layers. Each layer has two sub-layers. The first is a multi-head self-attention mechanism, and the second is a simple, position-wise fully connected MLP. There are a residual connection around each of the two sub-layers, followed by layer normalization. All sub-layers in the model, as well as the embedding layers, produce outputs of dimension $d_{model} = 512$. The encoder output is fed in to the decoder which is also composed of a stack of $N = 6$ identical layers. In addition to the two sub-layers in each encoder layer, the decoder inserts a third sub-layer, which performs multi-head attention over the output of the encoder stack. Similar to the encoder, we employ residual connections around each of the sub-layers, followed by layer normalization. Researchers also modify the self-attention sub-layer in the decoder stack to prevent positions from attending to subsequent positions. \newpage
+\noindent The Multi-Head attention formula introduced in this work is slightly different from the classical Dot-Product attention (chosen for its parallelization properties). This function differs by the scaling factor $\frac{1}{\sqrt(d_k)}$, used in order to have a more stable gradient. The attention formula used is the following: 
+
+\begin{displaymath}
+\textrm{Attention}(Q,K,V) = softmax(\frac{QK^T}{\sqrt{d_k}})V
+\end{displaymath}
+
+\noindent Instead of performing a single attention function with $d_{model}$-dimensional keys, values and queries, researchers found beneficial to linearly project the queries, keys and values $h=8$ times with different, learned linear projections to $d_q$, $d_k$ and $d_v$ dimensions, respectively. On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding $d_v$-dimensional output values. Multi-head attention allows the model to jointly attend to information from different representation subspaces at different positions. Then, the Multi-Head formula is the following:
+\begin{displaymath}
+\textrm{MultiHead}(Q, K, V) = Concat(head_1, ..., head_h)W^O
+\end{displaymath}
+\begin{displaymath}
+\textrm{where } head_i = attention(QW^O_i, QW^K_i, QW^V_i)
+\end{displaymath}
+
+\noindent Where the projections are parameters matrices $W_i^O \in \R^{d_{model} \times d_k}$, $W^K_i \in \R^{d_{model} \times d_k}$, $W_i^V \in \R^{d_{model} \times d_v}$.
+
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.6]{head}}
+\caption{Scaled Dot Product attention (left) and Multi-Head attention (right) representations} 
+\label{fig}
+\end{figure}
+
+\subsubsection{Transformer complexity}
+The use of Self-attention is motivated by the less complexity per layer and biggest amount of computation that can be parallelized. Last motivation is the path length between long-range dependencies in the network. One key factor affecting the ability to learn such dependencies is the length of the paths forward and backward signals have to traverse in the network. A self-attention layer connects all positions with a constant number of sequentially executed operations, whereas a recurrent layer requires $\mathcal{O}(n)$ sequential operations. In terms of computational complexity, self-attention layers are faster than recurrent layers when the sequence length $n$ is smaller than the representation dimensionality $d$. To improve computational performance for tasks involving very long sequences, self-attention could be \emph{restricted} to considering only a neighborhood of size $r$ in the input sequence centered around the respective output position. This would increase the maximum path length to $\mathcal{O}(n/r)$.  A single convolutional layer with kernel width $k < n$ does not connect all pairs of input and output positions. Doing so requires a stack of $\mathcal{O}(n/k)$ convolutional layers in the case of contiguous kernels, or $\mathcal{O}(log_k (n))$ in the case of dilated convolutions\footnote{\textbf{Dilated Convolutions} are a type of convolution that “inflate” the kernel by inserting holes between the kernel elements. An additional parameter  (dilation rate) indicates how much the kernel is widened.}, increasing the length of the longest paths between any two positions in the network. Convolutional layers are generally more expensive than recurrent layers, by a factor of $k$. As side benefit, self-attention could yield more interpretable models. Below is summarized the complexity of the used layers versus previous solutions.
+\begin{center}
+\begin{longtable}{  p{5cm} p{4cm}  p{2cm} p{2,5cm} }
+\hline \hline 
+Layer Type & Complexity per Layer & Sequential Operations & Maximum Path Length \\
+\hline \hline 
+Self-attention 			& $\mathcal{O}(n^2 \cdot d)$ 		& $\mathcal{O}(1)$	& $\mathcal{O}(1)$\\
+Recurrent				& $\mathcal{O}(n \cdot d^2)$		& $\mathcal{O}(n)$	& $\mathcal{O}(n)$\\
+Convolutional			& $\mathcal{O}(k \cdot n \cdot d^2)$	& $\mathcal{O}(1)$	& $\mathcal{O}(log_k (n))$\\
+Self-attention (restricted)  & $\mathcal{O}(r \cdot n \cdot d)$	& $\mathcal{O}(1)$	& $\mathcal{O}(n/r)$\\
+\hline
+\end{longtable}
+\end{center}
+
+\newpage
+% ================================ %
+%           Chapter 4           %
+% - task, idea, sota and transformer comparison
+% - qualcosa non solo su CV
+% ================================ %
+\section{Some Transformer applications}
+%Below are reported some applications of Transformers in different task.
+
+\subsection{Machine Translation} %vedi bert
+In the paper ``Attention is all you need'' researchers showed how Transformers out-perform the previous State-of-the-Art in the Machine Translation task. The previous approach\cite{cnnml} was based entirely on convolutional neural networks and attention (in each decoder layer). They used CNNs because more parallelizable then RNNs. Below is reported a comparative table between the two solutions in terms of BLEU\footnote{\textbf{BLEU}: Bi-Lingual Evaluation Understudy is a metric commonly used to evaluate the performance of a model in the Machine Translation task}. 
+
+\begin{longtable}{ p{6cm}  p{3cm}   p{3cm}}
+\hline \hline 
+Model & BLEU EN-DE & BLEU EN-FR \\
+\hline \hline 
+ConvS2S Ensemble\cite{cnnml} 	& 26.36 & 41.29 \\
+Transformer (base model) 		& 27.30 & 38.10 \\
+Transformer (big model)			&  \textbf{28.40} & \textbf{41.80} \\
+\hline
+\end{longtable}
+ 
+\noindent According to \href{https://paperswithcode.com/sota/machine-translation-on-wmt2014-english-german}{paperswithcode.com} Transformer are still the best solution in this task.
+
+\subsection{Image Classification}
+In ``An image is worth $16\times16$ words'' researchers proved that Transformers can be used also in Computer Vision with excellent results, they call them Visual Transformer (ViT). In order to achieve this task is necessary a little trick. In particular the images must be split into fixed-size patches($16\times16$ , by title of the paper, or $14\times14$ ) an treated as tokens conserving the original structure of  ``Attention is all you need'''s architecture. An advantage of this intentionally simple setup is that scalable NLP Transformer architectures can be used almost out of the box. The trick is played reshaping the 3D image $x \in \R^{H \times W \times C}$ into a sequence of flattened 2D patches $x_p \in \ \R^{N \times (P^2 \cdot  C)}$, where $(H,W)$ is the resolution of the original image, C is the number of channels, $(P,P)$ is the resolution of each image patch, and $N =HW/P^2$ is the resulting number of patches, which also serves as the effective input sequence length for the Transformer. As an alternative to raw image patches, the input sequence can be composed from feature maps of a CNN. Then the patches are unfolded into $1D$ vectors, the positional embedding is add and the input is given into the model. Below there are some results about the two versions against the previous State-of-the-Art: the huge one with $14\times14$ patches and the large with $16\times16$ patches.
+
+\begin{longtable}{ p{4cm}  p{2.2cm}   p{2.2cm}  p{2cm}  p{2cm}}
+\hline \hline 
+Data set 			& ViT-H/14 		& ViT-L/16			 & ResNet 		& EfficientNet \\
+\hline \hline 
+ImageNet	 		& \textbf{88.55 $\pm 0.04$}	& 87.76 $\pm 0.03$	& 87.54 $\pm 0.02$	& 88.50 $\pm 0.00$	\\
+CIFAR-100 		& \textbf{94.55 $\pm 0.04$} 	& 93.90 $\pm 0.03$	& 93.51 $\pm 0.08$	& - 	\\
+Oxford Flowers-102 	& 99.68 $\pm 0.02$ 	& \textbf{99.74 $\pm 0.00$}	& 99.63 $\pm 0.03$	& -	\\
+VTAB (19 tasks)	& \textbf{77.63 $\pm 0.23$} 	& 76.28 $\pm 0.46$	& 76.29 $\pm 1.70$	& -	\\
+\hline
+\end{longtable}
+
+The model trained on large datasets and then can be tuned, removing the pre-trained prediction head, for other vision tasks.
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.7]{vit}}
+\caption{Visual Transformer} 
+\label{fig}
+\end{figure}
+
+\subsection{Object Detection}
+This task is really complex because it ask to recognize both the position and the class of objects. The researchers of Facebook tried to solve this task with Transformer. In this case the first step is the extraction of the feature map by a CNN. Then the set of images features is given as input to the Transformer which returns set of box predictions in each of those there are a tuple $\{c_i, b_i\}$ where $c_i$ is the target class label (which may be $\emptyset$, the no object class. Is is used as padding in case of lower number of predictions) and $b_i$ $\in [0,1]^4$ is a vector that defines the box center coordinates and its height and width relative to the image size. Then is computed the bipartite matching loss:
+\begin{displaymath}
+\hat{\sigma} = \textrm{arg}\min\limits_{\sigma \in \mathcal{G}_N} \sum_i ^N \mathcal{L}_{match} (y_i, \hat{y}_{\sigma_i})
+\end{displaymath}
+\noindent where $\mathcal{L}_{match} (y_i, \hat{y}_{\sigma_i}) = -\mathbbm{1}_{\{c_i \neq \emptyset\}} \hat{p}_{\sigma(i)}(c_i)+\mathbbm{1}_{c_i \neq \emptyset}\mathcal{L}_{box}(b_i, \hat{b}_{\sigma(i)})$. The name is ``bipartite matching'' because the prediction and the ground truth form a bipartite graph so each prediction can be assigned to one label in order to minimize the edges. In this way the order of labels is not important. This process need to find first the best maches (that is efficiently computed with the Hungarian algorithm) then the loss is computed:
+\begin{displaymath}
+\mathcal{L}_{Hungarian}(y, \hat{y}) = \sum_{i=1}^N [-\textrm{log} \: \hat{p}_{\hat{\sigma}(i)} (c_i) + \mathbbm{1}_{\{c_i \neq \emptyset\}}\mathcal{L}_{box}(b_i, \hat{b}_{\hat{\sigma}(i)})]
+\end{displaymath}
+\noindent where $\hat{\sigma}$ is the optimal assignment computed in the first step. In practice, researchers down-weight the log-probability term when $c_i \neq \emptyset$ by a factor 10 to account for class imbalance. In the matching step we use probabilities $\hat{p}_{\hat{\sigma}(i)} c(i)$ instead of log-probabilities because they observed better empirical performances.
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.53]{endtoend2}}
+\caption{Detection Transformer} 
+\label{fig}
+\end{figure}
+\newpage
+
+\subsection{Graph Regression and Node Classification}
+%In this section we analyze how a Transformer can be applied on graphs. 
+Two are the key aspects in the development of Graph Transformers\cite{graphs} whose are sparsity and positional encodings which should ideally be used in the best possible way for learning on graph datasets.
+
+Note in NLP full attention is used because the dependency of a word in a sentence on another word can vary with context, perspective of a user and specific application so it makes sense to have each word attending to each other word in a sentence. An other aspect to take in account is that the sentences used have less then $10^5$ words, so they are graphs with less then $10^5$ nodes. Those computations are still feasible with respect to memory and time. In case of actual graph datasets, graphs have arbitrary connectivity structure available depending on the domain and target of application, and have node sizes in ranges of up to millions, or billions. On these accounts, it is practical (for feasibility) and advantageous (for utilizing sparse structure information) to have a Graph Transformer where a node attends to local node neighbors (restricted self-attention), similar to Graph Attention Networks (GATs). 
+
+As Positional Encoding researchers used Laplacian eigenvectors since they represent a natural generalization of the Transformer positional encodings (PE) for graphs as the eigenvectors of a discrete line (NLP graph) are the cosine and sinusoidal functions.\cite{PE} These vectors form a meaningful local coordinate system, while preserving the global graph structure. Mathematically, they are defined via the factorization of the graph Laplacian matrix:
+\begin{displaymath}
+\Delta = I - D^{-\frac{1}{2}} A D^{-\frac{1}{2}} = U^T \Lambda U
+\end{displaymath}
+where $A$ is the $n \times n$ adjacency matrix, $D$ is the degree matrix, and $\Lambda$, $U$ correspond respectively to the eigenvalues and eigenvectors. 
+
+Researchers developed two models. The first consider only the nodes and how they are connected, while the second takes in account also the weights of the edges. These two models are able to tackle task such as Graph Regression and Node Classification just changing the top MLP. As you can see in the following table Graph Transformer (GT) is not the State-of-the-Art but is very close. Note that GT out-performs GAT, the previous approach with attention.
+
+\newpage
+\begin{longtable}{ p{3cm}  p{3cm}   p{3.5cm}  p{3.5cm}}
+\hline \hline 
+Model			& Graph Regression (ZINC) 		& Node Classification (CLUSTER)			 & Node Classification (PATTERN) \\
+\hline \hline 
+GCN	 		& 0.367 $\pm 0.011$			& 68.498 $\pm 0.976$		& 71.892 $\pm 0.334$		\\
+GAT 			& 0.384 $\pm 0.007$			& 70.587 $\pm 0.447$		& 78.271 $\pm 0.186$	 	\\
+GatedGCN 	& \textbf{0.214 $\pm 0.013$} 	& \textbf{76.082 $\pm 0.196$}	& \textbf{86.508 $\pm 0.085$}	\\
+GT			& 0.226 $\pm 0.014$ 		& 73.169 $\pm 0.622$		& 84.808 $\pm 0.068$			\\
+\hline
+\end{longtable}
+
+\noindent In the representation $h^l_i$ is the considered node, $\{h^l_j\}$ is the set of neighbours, $\{e^l_{i,j}\}$ is the set of weights and $\lambda$ is the Laplacian Eigen Vectors used as Positional Encoding.
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=.7]{grapht}}
+\caption{Graph Transformers} 
+\label{fig}
+\end{figure}
+
+%As well as in the original Transformer in Graph Transformer researchers used positional encoding. They use Laplacian Positional Encodings with precomputed Laplacian eigenvectors to add into the node features before the first layer.
+
+
+\newpage
+% ================================ %
+%           Conclusioni           %
+% ================================ %
+\section{Conclusions} %sviluppare
+
+The attention models became very popular since the introduction of the first AM in 2015, they are able to learn form the data not only the hidden patterns but even the impact that each piece of the input have on the final prediction. In Chapter 1 we saw the architectures introduced before Transformer and an intuition of how they work. In Chapter 2 we saw that the intuition behind attention is simple further this application can be useful to understand how deep learning model learn. We saw that attention can be divided in different categories that are not mutual esclusive. Finally in Chapter 3 we saw some architectures that uses attention. For sure the most impacting solution is the one proposed by Vaswani's team, since that solution became the State-of-Art in Machine  Translation and can easily be adapted for other task just out of the box. Finally we saw some applications of this architecture across several tasks.
+
+\begin{center}
+\noindent \emph{``We are excited about the future of attention-based models and plan to apply them to other tasks. We plan to extend the Transformer to problems involving input and output modalities other than text and to investigate local, restricted attention mechanisms to efficiently handle large inputs and outputs such as images, audio and video.'' \cite{att}}
+\end{center} 
+
+\noindent As the authors underline at the end of  ``Attention is all you need'' that this architecture is born for NLP but can be extended to a wide variety of task just out of the box performing some little tricks as we saw. Transformers are efficient to train and do not need previous knowledge from data context. But this solution is not perfect, it has some problems. One of the biggest is the need of huge data sets to train. \\
+
+In my personal opinion this models are extremely powerful and helpful. As we saw above not only they out-perform many previous solutions but they can be used to understand what happen inside the neural network black box. This is the reason why I think Transformers will play a fundamental role in the next years in explain what happen inside a neural network as well as being the State-of-the-Art in several tasks. \\
+
+\newpage
+% ================================ %
+%           Bibliografia           %
+% ================================ %
+
+\begin{thebibliography}{9}
+
+\bibitem{graphs}
+Vijay Prakash Dwivedi, Xavier Bresson \\
+\textit{A Generalization of Transformer Networks to Graphs}
+
+\bibitem{Nallapati} 
+Ramesh Nallapati, Bowen Zhou, Cicero dos Santos, Caglar Guìtlcehre, and Bing Xiang. \\
+\textit{Abstractive Text Summarization using Sequence-to-sequence RNNs and Beyond.} 
+
+\bibitem{16}  
+Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, Neil Houlsby\\
+\textit{An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale}
+
+\bibitem{att}  
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Tukasz Kaiser, and Illia Polosukhin.\\
+\textit{Attention is All you Need}
+
+\bibitem{PE}
+Vijay Prakash Dwivedi, Chaitanya K. Joshi, Thomas Laurent, Yoshua Bengio, Xavier Bresson\\
+\textit{Benchmarking Graph Neural Networks}
+
+\bibitem{cnnml}  
+Jonas Gehring, Michael Auli, David Grangier, Denis Yarats, Yann N. Dauphin\\
+\textit{Convolutional Sequence to Sequence Learning}
+
+\bibitem{lenet}
+Yann LeCun, Leon Bottou, Yoshua Bengio, and Patrick Haner \\
+\textit{Gradient Based Learning Applied to Document Recognition}
+
+\bibitem{luo}
+Thang Luong, Hieu Pham, and Christopher D. Manning.
+\textit{Effective Approaches to attention-based Neural Machine Translation.}
+
+\bibitem{gaf}  
+Zhiguang Wang, Tim Oates\\
+\textit{Encoding Time Series as Images for Visual Inspection and Classification Using Tiled Convolutional Neural Networks}
+
+\bibitem{Sukhbaatar}
+Sainbayar Sukhbaatar, arthur szlam, Jason Weston, and Rob Fergus.\\
+\textit{End-To-End Memory Networks.}
+
+\bibitem{fb}  
+Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Kirillov, and Sergey Zagoruyko\\
+\textit{End-to-End Object Detection with Transformers}
+
+\bibitem{cho}  
+Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Dzmitry Bahdanau, Fethi Bougares, Holger Schwenk, Yoshua Bengio \\
+\textit{Learning Phrase Representations using RNN Encoder–Decoder for Statistical Machine Translation}
+
+\bibitem{transgen}  
+Niki Parmar, Ashish Vaswani, Jakob Uszkoreit, Lukasz Kaiser, Noam Shazeer, Alexander Ku, Dustin Tran \\
+\textit{Image Transformer}
+
+\bibitem{rume}  
+David E. Rumelhart, Geoffrey E. Hinton, Ronald J. Williams \\
+\textit{Learning representations by back-propagating errors}
+
+\bibitem{Bahdanau}  
+Dzmitry Bahdanau, Kyunghyun Cho, Yoshua Bengio\\
+\textit{Neural Machine Translation by Jointly Learning to Align and Translate}
+
+\bibitem{hopfield}  
+J. J. Hopfield\\
+\textit{Neural networks and physical systems with emergent collective computational abilities}
+
+\bibitem{Nadaraya}  
+Elizbar A Nadaraya \\
+\textit{On estimating regression. Theory of Probability and Its Applications}
+
+\bibitem{young}  
+Tom Young, Devamanyu Hazarika, Soujanya Poria, and Erik Cambria \\
+\textit{Recent trends in deep learning based natural language processing.}
+
+\bibitem{xu}
+Kelvin Xu, Jimmy Ba, Ryan Kiros, Kyunghyun Cho, Aaron Courville, Ruslan Salakhudinov, Rich Zemel, and Yoshua Bengio. \\
+\textit{Show, Attend and Tell: Neural Image Caption Generation with Visual attention}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{thebibliography}
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
